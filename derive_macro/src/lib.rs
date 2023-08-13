@@ -391,7 +391,7 @@ pub fn struct_iter_derive(item: TokenStream) -> TokenStream {
     };
 
     //Debug
-    println!("{stream2}");
+    //println!("{stream2}");
 
     // Convert output from proc_macro2::TokensStream to proc_macro::TokenStream
     let stream1 = stream2.into();
@@ -576,6 +576,96 @@ fn impl_struct_to_iter(ast: DeriveInput) -> Result<proc_macro2::TokenStream, Mac
                 self.inner
             }
         }
+    })
+}
+
+#[proc_macro_error::proc_macro_error]
+#[proc_macro_derive(StructFieldNames)]
+pub fn struct_field_names_derive(item: TokenStream) -> TokenStream {
+    // Convert to an abstract syntax tree for easier manipulation
+    let ast = syn::parse(item);
+    let ast: DeriveInput = match ast {
+        Ok(v) => v,
+        Err(e) => {
+            abort!("Failed to parse token input to macro! {:?}", e)
+        },
+    };
+
+    // Generate the output or present error
+    let stream2 = match impl_struct_field_names_derive(ast) {
+        Ok(v) => v,
+        Err(e) =>{
+            abort!("{}", e.message)
+        }
+    };
+
+    //Debug
+    println!("{stream2}");
+
+    // Convert output from proc_macro2::TokensStream to proc_macro::TokenStream
+    let stream1 = stream2.into();
+
+    stream1
+}
+
+fn impl_struct_field_names_derive(ast: DeriveInput) -> Result<proc_macro2::TokenStream, MacroError>{
+    let struct_data = match ast.data {
+        Data::Struct(s) => {s}
+        _ => {
+            return Err(MacroError{
+                message: "This derive only supports Structs".to_string()
+            })
+        }
+    };
+
+    let field_identifiers: Vec<String> = struct_data.fields.iter()
+        .map(|f| {
+                f.ident
+                    .clone()
+                    .expect("Field must have a type")
+                    .to_string()
+            })
+        .collect();
+
+    let struct_identifier = ast.ident;
+
+    let iterator_struct_name = {
+        let val = format!("FieldNamesIter_{}", struct_identifier);
+        let val: Ident = syn::parse_str(&val).expect("Failed to generate iterator_struct_name identifier token");
+        val
+    };
+
+    let counter: std::ops::Range<usize> = 0..field_identifiers.len();
+
+    Ok(quote::quote!{
+        struct #iterator_struct_name {
+            position: usize,
+        }
+
+        impl Iterator for #iterator_struct_name {
+            type Item = &'static str;
+
+            fn next(&mut self) -> Option<&'static str> {
+                let identifier = match self.position {
+                    #( # counter =>  #field_identifiers ),* ,
+                    _ => return None
+                };
+
+                self.position +=1;
+
+                Some(identifier)
+            }
+        }
+
+        impl StructFieldNames<&'static str, #iterator_struct_name> for #struct_identifier {
+            fn struct_field_names(&self) -> #iterator_struct_name {
+                #iterator_struct_name {
+                    position: 0
+                }
+            }
+        }
+
+
     })
 }
 

@@ -39,3 +39,7 @@ pub trait TypeNames{
 pub trait StructIter <IterItem, Iter: Iterator<Item = IterItem>>{
     fn struct_iter(self) -> Iter;
 }
+
+pub trait StructFieldNames<IterItem, Iter: Iterator<Item = IterItem>>{
+    fn struct_field_names(&self) -> Iter;
+}

@@ -22,11 +22,12 @@
 //     value1: i64
 // }
 
-//#[derive(derive_macro::TypeNames)]
+#[derive(derive_macro::TypeNames)]
 #[derive(derive_macro::StructToTuple)]
 #[derive(derive_macro::StructIter)]
+#[derive(derive_macro::StructFieldNames)]
 #[derive(Clone)]
-struct MyStruct3{
+struct MyStruct3 {
     value0: usize,
     value1: u32,
     value2: u32
@@ -36,8 +37,9 @@ struct MyStruct3{
 //use enum_iter_derive::FlatStructValues;
 use enum_iter_derive::FlatStructIter;
 //use enum_iter_derive::StructToTuple;
-//use enum_iter_derive::TypeNames;
+use enum_iter_derive::TypeNames;
 use enum_iter_derive::StructIter;
+use enum_iter_derive::StructFieldNames;
 
 fn main() {
     // println!("Hello, world!");
@@ -86,20 +88,47 @@ fn main() {
 
     let iter = my_struct_3.clone().struct_iter().enumerate();
     for (n, i) in iter{
-
-        let v : Option<usize> = i.clone().into();
-        if let Some(v) = v{
+        if let (Option::<u32>::Some(v)) = i.clone().into() {
             println!("Struct field number {n} is {v} and is a usize");
         }
 
-        let v : Option<u32> = i.clone().into();
-        if let Some(v) = v{
-            println!("Struct field number {n} is {v} and  is a u32");
+        else if let (Option::<usize>::Some(v)) = i.clone().into() {
+            println!("Struct field number {n} is {v} and is a usize");
         }
     }
 
-    let tuple = my_struct_3.struct_iter().into_inner();
+    let tuple = my_struct_3.clone().struct_iter().into_inner();
     println!("{:?}", tuple);
+
+    let iter = my_struct_3.clone().struct_iter();
+    for field_value in iter{
+        match field_value {
+            StructValue_MyStruct3 ::T_0(usize_value) => {
+                println!("One usize found!");
+            }
+            StructValue_MyStruct3::T_1(u32_value) => {
+                println!("One u32 found!");
+            }
+        }
+    }
+
+    println!("MyStruct3 {{");
+    for (field_name, field_value) in my_struct_3.clone().struct_field_names().into_iter().zip(my_struct_3.clone().struct_iter()){
+        let mut val: String;
+
+        if let (Option::<u32>::Some(v)) = field_value.clone().into(){
+            val = v.to_string();
+        }
+        else if let (Option::<usize>::Some(v)) = field_value.clone().into(){
+            val = v.to_string();
+        }
+        else {
+            unreachable!();
+        }
+
+        println!("\t{field_name}: {val}");
+    }
+    println!("}}")
 
 
 
