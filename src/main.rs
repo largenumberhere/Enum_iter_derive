@@ -1,6 +1,5 @@
 // cargo +nightly  rustc --bin enum_iter_derive --  -Z macro-backtrace
 
-
 // #[derive(derive_macro::PrintEnumVariants)]
 // enum Letter {
 //     A,
@@ -22,24 +21,26 @@
 //     value1: i64
 // }
 
-#[derive(derive_macro::TypeNames)]
-#[derive(derive_macro::StructToTuple)]
-#[derive(derive_macro::StructIter)]
-#[derive(derive_macro::StructFieldNames)]
-#[derive(Clone)]
+#[derive(
+    derive_macro::TypeNames,
+    derive_macro::StructToTuple,
+    derive_macro::StructIter,
+    derive_macro::StructFieldNames,
+    Clone,
+)]
 struct MyStruct3 {
     value0: usize,
     value1: u32,
-    value2: u32
+    value2: u32,
 }
 
 //use enum_iter_derive::{PrintEnumVariants, FlatStructRefs};
 //use enum_iter_derive::FlatStructValues;
 use enum_iter_derive::FlatStructIter;
 //use enum_iter_derive::StructToTuple;
-use enum_iter_derive::TypeNames;
-use enum_iter_derive::StructIter;
 use enum_iter_derive::StructFieldNames;
+use enum_iter_derive::StructIter;
+use enum_iter_derive::TypeNames;
 
 fn main() {
     // println!("Hello, world!");
@@ -71,10 +72,7 @@ fn main() {
 
     let a = 1;
 
-
-
-
-    let my_struct_3 = MyStruct3{
+    let my_struct_3 = MyStruct3 {
         value0: 0,
         value1: 1,
         value2: 3,
@@ -87,12 +85,10 @@ fn main() {
     // println!("{vals:?}");
 
     let iter = my_struct_3.clone().struct_iter().enumerate();
-    for (n, i) in iter{
+    for (n, i) in iter {
         if let (Option::<u32>::Some(v)) = i.clone().into() {
             println!("Struct field number {n} is {v} and is a usize");
-        }
-
-        else if let (Option::<usize>::Some(v)) = i.clone().into() {
+        } else if let (Option::<usize>::Some(v)) = i.clone().into() {
             println!("Struct field number {n} is {v} and is a usize");
         }
     }
@@ -101,9 +97,9 @@ fn main() {
     println!("{:?}", tuple);
 
     let iter = my_struct_3.clone().struct_iter();
-    for field_value in iter{
+    for field_value in iter {
         match field_value {
-            StructValue_MyStruct3 ::T_0(usize_value) => {
+            StructValue_MyStruct3::T_0(usize_value) => {
                 println!("One usize found!");
             }
             StructValue_MyStruct3::T_1(u32_value) => {
@@ -113,16 +109,19 @@ fn main() {
     }
 
     println!("MyStruct3 {{");
-    for (field_name, field_value) in my_struct_3.clone().struct_field_names().into_iter().zip(my_struct_3.clone().struct_iter()){
+    for (field_name, field_value) in my_struct_3
+        .clone()
+        .struct_field_names()
+        .into_iter()
+        .zip(my_struct_3.clone().struct_iter())
+    {
         let mut val: String;
 
-        if let (Option::<u32>::Some(v)) = field_value.clone().into(){
+        if let (Option::<u32>::Some(v)) = field_value.clone().into() {
             val = v.to_string();
-        }
-        else if let (Option::<usize>::Some(v)) = field_value.clone().into(){
+        } else if let (Option::<usize>::Some(v)) = field_value.clone().into() {
             val = v.to_string();
-        }
-        else {
+        } else {
             unreachable!();
         }
 
@@ -130,19 +129,14 @@ fn main() {
     }
     println!("}}")
 
-
-
     //
     // //TODO: make flat_struct_values() for structs with several different fields
     // for v in my_struct.flat_struct_values(){
     //     println!("'{v:?}'");
     // }
-
-
 }
 
 // fn do_something(smt: &std::any::Any){
 //
 //
 // }
-

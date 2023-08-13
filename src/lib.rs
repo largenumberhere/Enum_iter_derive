@@ -6,7 +6,7 @@
 /// }
 
 // Print all the variant names of an enum
-pub trait PrintEnumVariants{
+pub trait PrintEnumVariants {
     fn print_enum_variants(&self);
 }
 
@@ -21,25 +21,25 @@ pub trait FlatStructValues<T: Clone> {
 }
 
 // Iterate over each struct field. Struct must contain only a single type for all fields
-pub trait FlatStructIter <'a, IterItem: 'a, Iter: Iterator<Item = &'a IterItem>>{
+pub trait FlatStructIter<'a, IterItem: 'a, Iter: Iterator<Item = &'a IterItem>> {
     fn flat_struct_iter(&'a self) -> Iter;
 }
 
 // Convert a struct to a tuple. Can use any type
-pub trait StructToTuple<TOUT>{
+pub trait StructToTuple<TOUT> {
     fn struct_to_tuple(self) -> TOUT;
 }
 
 // Get a list of strings with the type name assigned to each value in a struct
-pub trait TypeNames{
-   fn type_names(&self) -> Vec<String>;
+pub trait TypeNames {
+    fn type_names(&self) -> Vec<String>;
 }
 
 // Must also derive StructToTuple, for this one to work (it uses it under the hood). It works with structs that contain various types!
-pub trait StructIter <IterItem, Iter: Iterator<Item = IterItem>>{
+pub trait StructIter<IterItem, Iter: Iterator<Item = IterItem>> {
     fn struct_iter(self) -> Iter;
 }
 
-pub trait StructFieldNames<IterItem, Iter: Iterator<Item = IterItem>>{
+pub trait StructFieldNames<IterItem, Iter: Iterator<Item = IterItem>> {
     fn struct_field_names(&self) -> Iter;
 }
