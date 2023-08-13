@@ -35,7 +35,7 @@ pub trait TypeNames{
    fn type_names(&self) -> Vec<String>;
 }
 
-// Must also derive StructToTuple, for this one to work. It works with structs that contain various types!
+// Must also derive StructToTuple, for this one to work (it uses it under the hood). It works with structs that contain various types!
 pub trait StructIter <IterItem, Iter: Iterator<Item = IterItem>>{
     fn struct_iter(self) -> Iter;
 }

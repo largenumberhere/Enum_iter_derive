@@ -370,7 +370,6 @@ fn impl_type_names_derive(ast: DeriveInput) -> Result<proc_macro2::TokenStream, 
 }
 
 
-// Abandonded
 #[proc_macro_error::proc_macro_error]
 #[proc_macro_derive(StructIter)]
 pub fn struct_iter_derive(item: TokenStream) -> TokenStream {
@@ -392,7 +391,7 @@ pub fn struct_iter_derive(item: TokenStream) -> TokenStream {
     };
 
     //Debug
-    //println!("{stream2}");
+    println!("{stream2}");
 
     // Convert output from proc_macro2::TokensStream to proc_macro::TokenStream
     let stream1 = stream2.into();
@@ -503,27 +502,37 @@ fn impl_struct_to_iter(ast: DeriveInput) -> Result<proc_macro2::TokenStream, Mac
         idents
     };
 
+    let struct_value_identifier: Ident = {
+        let val = format!("StructValue_{}", identifier);
+        let val = syn::parse_str(&val).expect("Failed to parse struct_value_identifier token");
+        val
+    };
 
+    let iter_identifier: Ident = {
+        let val = format!("StructIter_{}", identifier);
+        let val = syn::parse_str(&val).expect("Failed to parse iter_identifier token");
+        val
+    };
 
     Ok(quote::quote!{
         #[derive(Debug)]
         #[derive(Clone)]
-        pub enum StructValue{
+        pub enum #struct_value_identifier {
             #( #enum_variant_names ( #enum_variant_type_contained ) ),*
         }
 
         #(
-            impl From<StructValue> for Option <#enum_variant_type_contained1> {
-                fn from(value: StructValue) -> Option <#enum_variant_type_contained2> {
+            impl From<#struct_value_identifier> for Option <#enum_variant_type_contained1> {
+                fn from(value: #struct_value_identifier) -> Option <#enum_variant_type_contained2> {
                     match value {
-                        StructValue :: #enum_variant_names1 (v) => Some(v),
+                        #struct_value_identifier :: #enum_variant_names1 (v) => Some(v),
                         _ => None
                     }
                 }
             }
         )*
 
-        struct Iter{
+        struct #iter_identifier{
             index: usize,
             inner:
             (
@@ -533,13 +542,13 @@ fn impl_struct_to_iter(ast: DeriveInput) -> Result<proc_macro2::TokenStream, Mac
             )
         }
 
-        impl Iterator for Iter{
-            type Item = StructValue;
+        impl Iterator for #iter_identifier{
+            type Item = #struct_value_identifier;
 
             fn next(&mut self) -> Option<Self::Item> {
                 let val = match self.index {
                     #(
-                        #counter0 => StructValue::#enum_variant_mappings (self.inner.#counter1)
+                        #counter0 => #struct_value_identifier::#enum_variant_mappings (self.inner.#counter1)
                     ),*
                     ,
                     _=> return None
@@ -552,17 +561,17 @@ fn impl_struct_to_iter(ast: DeriveInput) -> Result<proc_macro2::TokenStream, Mac
         }
 
         use enum_iter_derive::StructToTuple;
-        impl StructIter<StructValue, Iter> for #identifier {
-            fn struct_iter(self) -> Iter {
+        impl StructIter<#struct_value_identifier, #iter_identifier> for #identifier {
+            fn struct_iter(self) -> #iter_identifier {
                 let tuple = self.struct_to_tuple();
-                Iter {
+                #iter_identifier {
                     index: 0usize,
                     inner :tuple
                 }
             }
         }
 
-        impl Iter {
+        impl #iter_identifier {
             fn into_inner(self) -> ( #(#field_types),* ) {
                 self.inner
             }

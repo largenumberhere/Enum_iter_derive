@@ -24,9 +24,6 @@
 
 //#[derive(derive_macro::TypeNames)]
 #[derive(derive_macro::StructToTuple)]
-//#[derive(derive_macro::StructIter)]
-
-
 #[derive(derive_macro::StructIter)]
 #[derive(Clone)]
 struct MyStruct3{
@@ -87,19 +84,17 @@ fn main() {
     // let vals = my_struct_3.struct_to_tuple();
     // println!("{vals:?}");
 
-    let iter = my_struct_3.clone().struct_iter();
-    for i in iter{
-        let i: StructValue = i;
+    let iter = my_struct_3.clone().struct_iter().enumerate();
+    for (n, i) in iter{
 
         let v : Option<usize> = i.clone().into();
         if let Some(v) = v{
-            println!("{v} is a usize");
+            println!("Struct field number {n} is {v} and is a usize");
         }
-
 
         let v : Option<u32> = i.clone().into();
         if let Some(v) = v{
-            println!("{v} is a u32");
+            println!("Struct field number {n} is {v} and  is a u32");
         }
     }
 
