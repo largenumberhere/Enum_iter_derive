@@ -351,6 +351,14 @@ fn impl_type_names_derive(ast: DeriveInput) -> Result<proc_macro2::TokenStream, 
                     ),*
                 ]
             }
+
+            fn type_names_type() -> Vec<String> {
+                vec![
+                    #(
+                        stringify!(#field_types).to_string()
+                    ),*
+                ]
+            }
         }
     })
 }
@@ -641,6 +649,12 @@ fn impl_struct_field_names_derive(
 
         impl StructFieldNames<&'static str, #iterator_struct_name> for #struct_identifier {
             fn struct_field_names(&self) -> #iterator_struct_name {
+                #iterator_struct_name {
+                    position: 0
+                }
+            }
+
+            fn struct_field_names_type() -> #iterator_struct_name {
                 #iterator_struct_name {
                     position: 0
                 }

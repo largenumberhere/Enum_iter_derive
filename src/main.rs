@@ -34,6 +34,12 @@ struct MyStruct3 {
     value2: u32,
 }
 
+impl MyStruct3{
+    fn do_stuff() -> () {
+        println!("stuff was done");
+    }
+}
+
 //use enum_iter_derive::{PrintEnumVariants, FlatStructRefs};
 //use enum_iter_derive::FlatStructValues;
 use enum_iter_derive::FlatStructIter;
@@ -77,6 +83,15 @@ fn main() {
         value1: 1,
         value2: 3,
     };
+
+
+    for name in MyStruct3::struct_field_names_type() {
+        println!("The struct definition contains {name}");
+    }
+
+    for type_name in MyStruct3::type_names_type(){
+        println!("Struct three contains the types {}",type_name);
+    }
 
     // let names = my_struct_3.type_names();
     // println!("{names:?}");

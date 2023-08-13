@@ -33,6 +33,7 @@ pub trait StructToTuple<TOUT> {
 // Get a list of strings with the type name assigned to each value in a struct
 pub trait TypeNames {
     fn type_names(&self) -> Vec<String>;
+    fn type_names_type() -> Vec<String>;
 }
 
 // Must also derive StructToTuple, for this one to work (it uses it under the hood). It works with structs that contain various types!
@@ -40,6 +41,8 @@ pub trait StructIter<IterItem, Iter: Iterator<Item = IterItem>> {
     fn struct_iter(self) -> Iter;
 }
 
+// Get the name (as written in the code) of each field in the struct.
 pub trait StructFieldNames<IterItem, Iter: Iterator<Item = IterItem>> {
     fn struct_field_names(&self) -> Iter;
+    fn struct_field_names_type() -> Iter;
 }
