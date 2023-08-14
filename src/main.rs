@@ -1,3 +1,4 @@
+
 // cargo +nightly  rustc --bin enum_iter_derive --  -Z macro-backtrace
 
 // #[derive(derive_macro::PrintEnumVariants)]
@@ -20,14 +21,17 @@
 //     value0: i64,
 //     value1: i64
 // }
-
+//
 #[derive(
     derive_macro::TypeNames,
     derive_macro::StructToTuple,
     derive_macro::StructIter,
     derive_macro::StructFieldNames,
+    derive_macro::StructRefIter,
     Clone,
 )]
+//
+
 struct MyStruct3 {
     value0: usize,
     value1: u32,
@@ -42,7 +46,7 @@ impl MyStruct3{
 
 //use enum_iter_derive::{PrintEnumVariants, FlatStructRefs};
 //use enum_iter_derive::FlatStructValues;
-use enum_iter_derive::FlatStructIter;
+use enum_iter_derive::{FlatStructIter, StructRefIter};
 //use enum_iter_derive::StructToTuple;
 use enum_iter_derive::StructFieldNames;
 use enum_iter_derive::StructIter;
@@ -142,7 +146,54 @@ fn main() {
 
         println!("\t{field_name}: {val}");
     }
-    println!("}}")
+    println!("}}");
+    //
+    // for value in my_struct_3.struct_ref_iter() {
+    //     if let (Option::<&u32>::Some(v)) = value.clone().into() {
+    //         println!("u32! {}", v)
+    //     }
+    //     else if let (Option::<&usize>::Some(v)) = value.clone().into() {
+    //         println!("usize! {}", v)
+    //     }
+    //
+    // }
+
+    let iter = my_struct_3.struct_ref_iter();
+    for value in iter{
+        match value {
+            StructRefValue_MyStruct3::T_0(v) => {
+                println!("{v}");
+            },
+
+            StructRefValue_MyStruct3::T_1(v) => {
+                println!("{v}")
+            }
+
+            // Value_Mystruct3::T_0(usize_value) => {
+            //     println!("usize_value {}", usize_value);
+            // }
+            // Value_Mystruct3::T_1(u32_value) => {
+            //     println!("u32_value {}", u32_value);
+            // }
+
+        }
+
+        //
+        // if let (Result::<&u32, _>:: Ok(v)) = value.try_into() {
+        //     println!("found {v}")
+        //
+        // }
+        // else if let (Result::<&usize, _>::Ok(v)) = value.try_into() {
+        //     println!("found {}", v);
+        //
+        // }
+        // else {
+        //     unreachable!()
+        // }
+    }
+
+
+
 
     //
     // //TODO: make flat_struct_values() for structs with several different fields
@@ -151,7 +202,44 @@ fn main() {
     // }
 }
 
-// fn do_something(smt: &std::any::Any){
+// struct Iter_Mystruct3<'a>{
+//     position: usize,
+//     struct_ref: &'a MyStruct3
+// }
+//
+// impl<'a> Iterator for Iter_Mystruct3<'a>{
+//     type Item = Value_Mystruct3<'a>;
+//
+//     fn next(&mut self) -> Option<Self::Item> {
+//          let item: Value_Mystruct3 = match self.position {
+//              0 => Value_Mystruct3::T_0( & self.struct_ref.value0),
+//              1 => Value_Mystruct3::T_1( & self.struct_ref.value1),
+//              2 => Value_Mystruct3::T_1( & self.struct_ref.value2),
+//              _ => {
+//                  return None
+//              }
+//          };
+//
+//         self.position +=1;
+//
+//         Some(item)
+//     }
+//
+// }
+//
+// #[derive(Clone)]
+// enum Value_Mystruct3<'a>{
+//     T_0 (&'a usize),
+//     T_1 (&'a u32)
+// }
 //
 //
+// impl<'a> StructRefIter<'a, Value_Mystruct3<'a>, Iter_Mystruct3<'a>, MyStruct3> for MyStruct3{
+//     fn struct_ref_iter(&'a self) -> Iter_Mystruct3<'a> {
+//         Iter_Mystruct3{
+//             position: 0,
+//             struct_ref: self
+//         }
+//
+//     }
 // }

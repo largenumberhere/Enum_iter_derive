@@ -551,7 +551,7 @@ fn impl_struct_to_iter(ast: DeriveInput) -> Result<proc_macro2::TokenStream, Mac
         }
 
         use enum_iter_derive::StructToTuple;
-        impl StructIter<#struct_value_identifier, #iter_identifier> for #identifier {
+        impl StructIter<#struct_value_identifier, #iter_identifier,( #( #field_types),* )> for #identifier {
             fn struct_iter(self) -> #iter_identifier {
                 let tuple = self.struct_to_tuple();
                 #iter_identifier {
@@ -590,7 +590,7 @@ pub fn struct_field_names_derive(item: TokenStream) -> TokenStream {
     };
 
     //Debug
-    println!("{stream2}");
+    //println!("{stream2}");
 
     // Convert output from proc_macro2::TokensStream to proc_macro::TokenStream
     let stream1 = stream2.into();
@@ -661,6 +661,147 @@ fn impl_struct_field_names_derive(
             }
         }
 
+
+    })
+}
+
+#[proc_macro_error::proc_macro_error]
+#[proc_macro_derive(StructRefIter)]
+pub fn struct_ref_iter_derive(item: TokenStream) -> TokenStream {
+    // Convert to an abstract syntax tree for easier manipulation
+    let ast = syn::parse(item);
+    let ast: DeriveInput = match ast {
+        Ok(v) => v,
+        Err(e) => {
+            abort!("Failed to parse token input to macro! {:?}", e)
+        }
+    };
+
+    // Generate the output or present error
+    let stream2 = match impl_struct_ref_iter_derive(ast) {
+        Ok(v) => v,
+        Err(e) => {
+            abort!("{}", e.message)
+        }
+    };
+
+    //Debug
+    //println!("{stream2}");
+
+    // Convert output from proc_macro2::TokensStream to proc_macro::TokenStream
+    let stream1 = stream2.into();
+
+    stream1
+}
+
+fn impl_struct_ref_iter_derive(ast: DeriveInput) -> Result<proc_macro2::TokenStream, MacroError> {
+    // Get struct
+    let struct_data: DataStruct = match ast.data.clone() {
+        syn::Data::Struct(s) => s,
+        _ => abort!("{}", "Only structes are supported for this macro"),
+    };
+
+    // Get struct name
+    let identifier = ast.ident.clone();
+
+    // Get struct field types
+    let field_types: Vec<syn::Type> = struct_data.fields.iter().map(|f| f.ty.clone()).collect();
+
+    //Get struct field identifiers
+    let field_identifiers: Vec<Ident> = struct_data.fields.iter().map(|f| f.ident.clone().expect("Fields must all be named")).collect();
+
+
+
+    let enum_variant_type_contained = {
+        let mut variants = field_types.clone();
+        variants.dedup();
+        variants
+    };
+
+    let enum_variant_names = {
+        let mut idents = Vec::new();
+        for i in 0..enum_variant_type_contained.len() {
+            idents.push(format!("T_{}", i));
+        }
+
+        let idents: Vec<Ident> = idents
+            .iter()
+            .map(|i| {
+                let ident: Ident =
+                    syn::parse_str(i).expect("Failed to parse enum_vairant_identifier token");
+                ident
+            })
+            .collect();
+
+        idents
+    };
+
+    let enum_variant_mappings = {
+        let mut idents = Vec::new();
+        let mut last_type: Type = field_types.first().unwrap().clone();
+        let mut enum_index = 1;
+
+        idents.push(enum_variant_names.first().unwrap().clone());
+
+        for f in field_types.iter().skip(1) {
+            if f.clone() != last_type {
+                enum_index += 1;
+                last_type = f.clone();
+            }
+            idents.push(enum_variant_names[enum_index - 1].clone());
+        }
+
+        idents
+    };
+
+    let iter_struct_name: Ident = {
+        let val = format!("StructRefIter_{}", identifier);
+        let val = syn::parse_str(&val).expect("Failed to make iter_struct_name");
+        val
+    };
+
+    let struct_value_identifier: Ident = {
+        let val = format!("StructRefValue_{}", identifier);
+        let val = syn::parse_str(&val).expect("Failed to parse struct_value_identifier token");
+        val
+    };
+
+
+    let counter0 = (0..(field_types.len()));
+
+    Ok(quote::quote!{
+        #[derive(Clone)]
+        enum #struct_value_identifier <'a> {
+            #( #enum_variant_names ( &'a #enum_variant_type_contained ) ),*
+        }
+
+        struct #iter_struct_name <'a> {
+            position: usize,
+            struct_ref: &'a #identifier
+        }
+
+        impl<'a> Iterator for #iter_struct_name <'a> {
+            type Item = #struct_value_identifier <'a>;
+
+            fn next(&mut self) -> Option<Self::Item> {
+                let item = match self.position {
+                    #( #counter0 => #struct_value_identifier :: #enum_variant_mappings  ( & self.struct_ref.#field_identifiers ) ),* ,
+                    _ => return None
+                };
+
+                self.position += 1;
+                Some(item)
+            }
+        }
+
+        impl<'a> StructRefIter <'a, #struct_value_identifier <'a>, #iter_struct_name <'a>, #identifier >  for #identifier {
+            fn struct_ref_iter(&'a self) ->  #iter_struct_name {
+                #iter_struct_name {
+                    position: 0,
+                    struct_ref: self
+                }
+            }
+        }
 
     })
 }
