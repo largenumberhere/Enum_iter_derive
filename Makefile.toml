@@ -12,11 +12,15 @@ script = '''
 cd derive_macro
 env RUSTFLAGS=-Awarnings cargo build --quiet
 cd ..
+env RUSTFLAGS=-Awarnings cargo test --quiet
 env RUSTFLAGS=-Awarnings cargo run --bin enum_iter_derive --quiet
 '''
 
 [tasks.lint]
 script_runner = "powershell"
 script = '''
+cd derive_macro
+cargo clippy
+cd ..
 cargo clippy
 '''

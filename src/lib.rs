@@ -1,6 +1,3 @@
-#[cfg(test)]
-mod tests;
-
 /// These are all utility traits for working with enums and structs. The simpler ones are less flexible but are easier to use.
 /// All enums or structs used must have named fields, this may be changed at a later date
 /// All these traits can be derived using the derive_macro sub-project. Most of them go on structs something like this:
@@ -12,6 +9,12 @@ mod tests;
 /// Many of the derives return an enum.
 /// It's variants will be T_0(type_0), T_1(type_1) ... etc, where type_* refers to the type of each unique type in the struct in the order they are written in code.
 ///
+
+#[cfg(test)]
+mod tests;
+
+/// Makes all the stuff in the derive_macro folder visible outside this crate as enum_iter_derive::derive_macro
+pub extern crate derive_macro;
 
 /// Print all the variant names of an enum
 pub trait PrintEnumVariants {

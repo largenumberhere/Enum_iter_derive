@@ -1,4 +1,4 @@
-#![feature(type_name_of_val)]
+//#![feature(type_name_of_val)]
 
 use proc_macro::TokenStream;
 use proc_macro_error::{abort, emit_warning, ResultExt};
@@ -10,6 +10,7 @@ use std::ops::Range;
 use syn::__private::str;
 use syn::spanned::Spanned;
 use syn::{Data, DataStruct, DeriveInput, Fields, Ident, Item, Type};
+
 
 #[proc_macro_derive(PrintEnumVariants)] //Same as trait
 pub fn print_enum_variants_derive(item: TokenStream) -> TokenStream {
@@ -665,6 +666,7 @@ fn impl_struct_field_names_derive(
     })
 }
 
+#[macro_export]
 #[proc_macro_error::proc_macro_error]
 #[proc_macro_derive(StructRefIter)]
 pub fn struct_ref_iter_derive(item: TokenStream) -> TokenStream {
@@ -709,8 +711,6 @@ fn impl_struct_ref_iter_derive(ast: DeriveInput) -> Result<proc_macro2::TokenStr
 
     //Get struct field identifiers
     let field_identifiers: Vec<Ident> = struct_data.fields.iter().map(|f| f.ident.clone().expect("Fields must all be named")).collect();
-
-
 
     let enum_variant_type_contained = {
         let mut variants = field_types.clone();
